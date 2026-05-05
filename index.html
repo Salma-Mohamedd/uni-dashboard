@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Uni Dashboard</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    :root {
+      --bg: #070b14;
+      --panel: rgba(13, 20, 35, 0.82);
+      --panel-2: rgba(20, 30, 50, 0.72);
+      --text: #f8fafc;
+      --muted: #9aa7bd;
+      --line: rgba(148, 163, 184, 0.15);
+      --input: rgba(9, 14, 26, 0.88);
+      --accent: #7dd3fc;
+      --accent2: #c4b5fd;
+      --good: #34d399;
+      --warn: #fbbf24;
+      --bad: #fb7185;
+      --shadow: 0 24px 70px rgba(0, 0, 0, 0.34);
+      --radius: 24px;
+    }
+
+    html[data-theme="light"] {
+      --bg: #f6f7fb;
+      --panel: rgba(255, 255, 255, 0.86);
+      --panel-2: rgba(255, 255, 255, 0.72);
+      --text: #0f172a;
+      --muted: #64748b;
+      --line: rgba(15, 23, 42, 0.12);
+      --input: rgba(255, 255, 255, 0.9);
+      --accent: #2563eb;
+      --accent2: #7c3aed;
+      --shadow: 0 18px 45px rgba(15, 23, 42, 0.10);
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 10% 0%, rgba(125, 211, 252, 0.18), transparent 30%),
+        radial-gradient(circle at 92% 8%, rgba(196, 181, 253, 0.15), transparent 28%),
+        linear-gradient(135deg, var(--bg), #0b1020 70%);
+      background-attachment: fixed;
+    }
+
+    html[data-theme="light"] body {
+      background:
+        radial-gradient(circle at 10% 0%, rgba(37, 99, 235, 0.12), transparent 30%),
+        radial-gradient(circle at 92% 8%, rgba(124, 58, 237, 0.10), transparent 28%),
+        linear-gradient(135deg, var(--bg), #eef2ff 70%);
+    }
+
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+
+    .wrap {
+      width: min(1180px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 24px 0 40px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo {
+      width: 46px;
+      height: 46px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: white;
+      box-shadow: 0 14px 30px rgba(125, 211, 252, 0.18);
+    }
+
+    h1, h2, h3, h4, p { margin-top: 0; }
+    .brand h1 { margin: 0; font-size: 20px; letter-spacing: -0.5px; }
+    .brand p { margin: 3px 0 0; color: var(--muted); font-size: 13px; }
+
+    .top-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+
+    .btn {
+      border: 1px solid transparent;
+      border-radius: 14px;
+      padding: 10px 13px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: white;
+      font-weight: 850;
+      transition: 0.18s ease;
+    }
+    .btn:hover { transform: translateY(-1px); filter: brightness(1.06); }
+    .btn.ghost { background: var(--panel); color: var(--text); border-color: var(--line); box-shadow: none; }
+    .btn.danger { background: rgba(251, 113, 133, 0.12); color: var(--bad); border-color: rgba(251, 113, 133, 0.26); }
+    .btn.small { font-size: 12px; padding: 7px 10px; border-radius: 11px; }
+    .btn.full { width: 100%; }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      backdrop-filter: blur(18px);
+      box-shadow: var(--shadow);
+      padding: 20px;
+    }
+
+    .hero-main {
+      min-height: 220px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .hero-main::after {
+      content: "";
+      position: absolute;
+      right: -90px;
+      top: -120px;
+      width: 260px;
+      height: 260px;
+      border-radius: 999px;
+      background: radial-gradient(circle, rgba(125,211,252,0.28), transparent 65%);
+    }
+
+    .hero-main > * { position: relative; z-index: 1; }
+    .badge {
+      display: inline-flex;
+      width: fit-content;
+      gap: 8px;
+      align-items: center;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--muted);
+      border-radius: 999px;
+      padding: 7px 11px;
+      font-size: 13px;
+      font-weight: 800;
+      margin-bottom: 13px;
+    }
+
+    .hero-main h2 {
+      margin-bottom: 10px;
+      font-size: clamp(32px, 5vw, 54px);
+      line-height: 0.98;
+      letter-spacing: -1.8px;
+    }
+
+    .gradient {
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .hero-main p { color: var(--muted); line-height: 1.7; max-width: 680px; margin-bottom: 0; }
+
+    .next-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 220px;
+      background: linear-gradient(135deg, rgba(125,211,252,0.10), rgba(196,181,253,0.08)), var(--panel);
+    }
+
+    .next-label { color: var(--muted); font-size: 13px; font-weight: 850; margin-bottom: 8px; }
+    .next-title { font-size: 21px; font-weight: 950; margin-bottom: 6px; letter-spacing: -0.4px; }
+    .next-meta { color: var(--muted); font-size: 13px; line-height: 1.5; }
+
+    .big-countdown {
+      margin-top: 16px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 9px;
+    }
+    .time-box {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(255,255,255,0.045);
+      padding: 14px 10px;
+      text-align: center;
+    }
+    .time-box strong { display: block; font-size: 30px; letter-spacing: -1px; }
+    .time-box span { display: block; color: var(--muted); font-size: 11px; text-transform: uppercase; font-weight: 900; }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      margin-bottom: 16px;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: var(--panel);
+      backdrop-filter: blur(18px);
+    }
+
+    .tab {
+      white-space: nowrap;
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      font-weight: 900;
+      padding: 10px 13px;
+      border-radius: 15px;
+      transition: 0.18s ease;
+    }
+    .tab:hover { background: rgba(148,163,184,0.08); color: var(--text); }
+    .tab.active { color: white; background: linear-gradient(135deg, rgba(125,211,252,0.24), rgba(196,181,253,0.24)); }
+    html[data-theme="light"] .tab.active { color: var(--text); }
+
+    .section { display: none; animation: fade 0.22s ease; }
+    .section.active { display: block; }
+    @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .grid-2 { display: grid; grid-template-columns: 0.8fr 1.2fr; gap: 14px; }
+    .grid-cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+
+    .stat {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      min-height: 112px;
+    }
+    .stat p { color: var(--muted); font-size: 13px; font-weight: 850; margin-bottom: 8px; }
+    .stat strong { font-size: 34px; letter-spacing: -1px; }
+    .stat span { font-size: 22px; }
+
+    .title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .title-row h3 { font-size: 20px; margin-bottom: 4px; letter-spacing: -0.4px; }
+    .title-row p { color: var(--muted); font-size: 13px; margin-bottom: 0; }
+
+    form { display: grid; gap: 10px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 11px 12px;
+      color: var(--text);
+      background: var(--input);
+      outline: none;
+      transition: 0.15s ease;
+    }
+    textarea { min-height: 86px; resize: vertical; }
+    input:focus, select:focus, textarea:focus { border-color: rgba(125,211,252,0.55); box-shadow: 0 0 0 4px rgba(125,211,252,0.10); }
+    input::placeholder, textarea::placeholder { color: color-mix(in srgb, var(--muted), transparent 20%); }
+
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .toolbar input { flex: 1; min-width: 180px; }
+    .toolbar select { width: auto; min-width: 145px; }
+
+    .list { display: grid; gap: 10px; }
+
+    .item, .upcoming, .todo, .gymrow {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--panel-2);
+      padding: 14px;
+    }
+    .item-head, .todo, .gymrow, .upcoming {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .item h4, .upcoming h4, .todo h4, .gymrow h4 { margin: 0 0 5px; font-size: 15px; }
+    .item p, .upcoming p, .todo p, .gymrow p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.45; }
+
+    .meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 5px 9px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      background: rgba(255,255,255,0.04);
+      font-size: 11px;
+      font-weight: 950;
+    }
+    .pill.medium, .pill.studying { color: var(--accent); background: rgba(125,211,252,0.10); border-color: rgba(125,211,252,0.20); }
+    .pill.high, .pill.today, .pill.pending { color: var(--warn); background: rgba(251,191,36,0.10); border-color: rgba(251,191,36,0.20); }
+    .pill.critical, .pill.late { color: var(--bad); background: rgba(251,113,133,0.10); border-color: rgba(251,113,133,0.22); }
+    .pill.low { color: var(--muted); }
+    .pill.done, .pill.future { color: var(--good); background: rgba(52,211,153,0.10); border-color: rgba(52,211,153,0.20); }
+
+    .mini-count {
+      min-width: 88px;
+      text-align: center;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      padding: 10px;
+      background: rgba(255,255,255,0.04);
+    }
+    .mini-count strong { display: block; font-size: 18px; }
+    .mini-count span { color: var(--muted); font-size: 10px; font-weight: 900; text-transform: uppercase; }
+
+    .check { display: flex; gap: 9px; align-items: flex-start; flex: 1; }
+    .check input { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--accent); }
+    .done-text { text-decoration: line-through; color: var(--muted) !important; }
+
+    .course-card h4 { font-size: 20px; letter-spacing: -0.5px; }
+    .mini-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 12px 0; }
+    .mini-stat { text-align: center; border: 1px solid var(--line); border-radius: 16px; padding: 10px; background: rgba(255,255,255,0.035); }
+    .mini-stat strong { display: block; font-size: 20px; }
+    .mini-stat span { color: var(--muted); font-size: 11px; }
+    .progress-shell { height: 10px; border-radius: 999px; background: rgba(148,163,184,0.18); overflow: hidden; }
+    .progress-bar { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: 0.3s; }
+    .assessment-grid { display: grid; grid-template-columns: 1.4fr 0.7fr 0.7fr 0.7fr auto; gap: 7px; align-items: center; margin-bottom: 7px; }
+    .assessment-grid input { padding: 8px; border-radius: 11px; font-size: 13px; }
+    .labels { color: var(--muted); font-size: 11px; font-weight: 950; text-transform: uppercase; }
+
+    .quran-layout { display: grid; grid-template-columns: 1fr 290px; gap: 14px; }
+    .quran-summary { border-radius: 20px; padding: 18px; background: linear-gradient(135deg, rgba(125,211,252,0.16), rgba(196,181,253,0.12)); border: 1px solid var(--line); }
+    .quran-summary p { color: var(--muted); font-size: 13px; margin-bottom: 5px; }
+    .quran-summary strong { display: block; font-size: 42px; letter-spacing: -1px; margin-bottom: 15px; }
+
+    .empty { border: 1px dashed var(--line); border-radius: 18px; padding: 24px; text-align: center; color: var(--muted); background: rgba(255,255,255,0.025); }
+    .toast { position: fixed; right: 16px; bottom: 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); color: var(--text); padding: 11px 13px; box-shadow: var(--shadow); opacity: 0; transform: translateY(12px); transition: 0.2s; pointer-events: none; font-weight: 850; z-index: 20; }
+    .toast.show { opacity: 1; transform: none; }
+
+    @media (max-width: 900px) {
+      .hero, .grid-2, .quran-layout { grid-template-columns: 1fr; }
+      .grid-3, .grid-cards { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 620px) {
+      .wrap { width: min(100% - 18px, 1180px); padding-top: 14px; }
+      .topbar { align-items: flex-start; flex-direction: column; }
+      .top-actions { justify-content: flex-start; }
+      .form-row, .mini-stats { grid-template-columns: 1fr; }
+      .item-head, .todo, .gymrow, .upcoming { flex-direction: column; }
+      .mini-count { width: 100%; }
+      .assessment-grid { grid-template-columns: 1fr; background: rgba(255,255,255,0.035); padding: 9px; border-radius: 14px; }
+      .labels { display: none; }
+      .big-countdown { grid-template-columns: repeat(3, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo">🎯</div>
+        <div>
+          <h1>AI Uni Dashboard</h1>
+          <p id="dateText">Personal semester planner</p>
+        </div>
+      </div>
+      <div class="top-actions">
+        <button id="themeBtn" class="btn ghost">🌙 Dark</button>
+        <button id="exportBtn" class="btn ghost">Export</button>
+        <button id="importBtn" class="btn ghost">Import</button>
+        <button id="resetBtn" class="btn danger">Reset</button>
+        <input id="importFile" type="file" accept="application/json" hidden />
+      </div>
+    </header>
+
+    <section class="hero">
+      <div class="panel hero-main">
+        <div>
+          <div class="badge">Simple, clean, focused</div>
+          <h2>Your semester, <span class="gradient">under control.</span></h2>
+          <p>Tasks, deadlines, courses, grades, final exams, Quran, clubs, gym, and to-dos — without the crowded layout.</p>
+        </div>
+        <div class="meta" style="margin-top:18px;">
+          <span class="pill" id="quickUpcoming">0 upcoming</span>
+          <span class="pill" id="quickWeek">0 this week</span>
+          <span class="pill" id="quickClock">--:--</span>
+        </div>
+      </div>
+
+      <div class="panel next-card">
+        <div>
+          <div class="next-label">NEXT COUNTDOWN</div>
+          <div class="next-title" id="nextTitle">No upcoming items</div>
+          <div class="next-meta" id="nextMeta">Add a task, final exam, or club deadline.</div>
+        </div>
+        <div class="big-countdown">
+          <div class="time-box"><strong id="countDays">--</strong><span>days</span></div>
+          <div class="time-box"><strong id="countHours">--</strong><span>hours</span></div>
+          <div class="time-box"><strong id="countMins">--</strong><span>mins</span></div>
+        </div>
+      </div>
+    </section>
+
+    <nav class="tabs">
+      <button class="tab active" data-tab="dashboard">Dashboard</button>
+      <button class="tab" data-tab="tasks">Tasks</button>
+      <button class="tab" data-tab="courses">Courses</button>
+      <button class="tab" data-tab="finals">Final Exams</button>
+      <button class="tab" data-tab="quran">Quran</button>
+      <button class="tab" data-tab="clubs">Clubs</button>
+      <button class="tab" data-tab="gym">Gym</button>
+    </nav>
+
+    <section id="dashboard" class="section active">
+      <div class="grid-3">
+        <div class="panel stat"><div><p>This week</p><strong id="statWeek">0</strong></div><span>⏰</span></div>
+        <div class="panel stat"><div><p>Overdue</p><strong id="statOverdue">0</strong></div><span>⚠️</span></div>
+        <div class="panel stat"><div><p>Final exams</p><strong id="statFinals">0</strong></div><span>🎓</span></div>
+      </div>
+
+      <div class="grid-2" style="margin-top:14px;">
+        <div class="panel">
+          <div class="title-row"><div><h3>Quick To-Do</h3><p>Small actions, fast tracking.</p></div></div>
+          <form id="todoForm">
+            <input id="todoTitle" placeholder="Example: revise lecture 6" required />
+            <div class="form-row"><input id="todoDate" type="date" /><select id="todoArea"><option>Study</option><option>Projects</option><option>Personal</option><option>Gym</option><option>Quran</option><option>Club</option></select></div>
+            <button class="btn" type="submit">Add To-Do</button>
+          </form>
+          <div id="todoList" class="list" style="margin-top:12px;"></div>
+        </div>
+
+        <div class="panel">
+          <div class="title-row"><div><h3>Upcoming Countdowns</h3><p>Nearest tasks, exams, and club deadlines.</p></div><button class="btn ghost small" onclick="switchTab('tasks')">Add Task</button></div>
+          <div id="upcomingList" class="list"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="tasks" class="section">
+      <div class="grid-2">
+        <div class="panel">
+          <div class="title-row"><div><h3>Add Task</h3><p>Quiz, project, discussion, lab, or deadline.</p></div></div>
+          <form id="taskForm">
+            <input id="taskTitle" placeholder="Task title" required />
+            <div class="form-row"><select id="taskCategory"><option>Assignment</option><option>Quiz</option><option>Project</option><option>Discussion</option><option>Lab</option><option>Study Session</option><option>Deadline</option></select><input id="taskCourse" placeholder="Course code" /></div>
+            <div class="form-row"><input id="taskDate" type="date" required /><input id="taskWeight" type="number" min="0" max="100" placeholder="Weight % if any" /></div>
+            <div class="form-row"><select id="taskPriority"><option>Low</option><option selected>Medium</option><option>High</option><option>Critical</option></select><select id="taskStatus"><option value="pending">Pending</option><option value="studying">Studying</option><option value="done">Done</option></select></div>
+            <textarea id="taskNotes" placeholder="Notes or study plan"></textarea>
+            <button class="btn" type="submit">Add Task</button>
+          </form>
+        </div>
+        <div class="panel">
+          <div class="title-row"><div><h3>Tasks</h3><p>Search, filter, and update status.</p></div></div>
+          <div class="toolbar"><input id="taskSearch" placeholder="Search tasks..." /><select id="taskFilter"><option value="all">All</option><option value="pending">Pending</option><option value="studying">Studying</option><option value="done">Done</option></select><select id="taskSort"><option value="date">Date</option><option value="priority">Priority</option></select></div>
+          <div id="taskList" class="list"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="courses" class="section">
+      <div class="panel">
+        <div class="title-row"><div><h3>Courses & Grades</h3><p>Add courses, assessment weights, scores, and attendance.</p></div></div>
+        <form id="courseForm" class="form-row">
+          <input id="courseCode" placeholder="Course code, e.g. AIS302" required />
+          <input id="courseName" placeholder="Course name" required />
+          <button class="btn" type="submit">Add Course</button>
+        </form>
+      </div>
+      <div id="courseList" class="grid-cards" style="margin-top:14px;"></div>
+    </section>
+
+    <section id="finals" class="section">
+      <div class="grid-2">
+        <div class="panel">
+          <div class="title-row"><div><h3>Add Final Exam</h3><p>Separate final exam period.</p></div></div>
+          <form id="examForm">
+            <input id="examTitle" placeholder="Exam title" required />
+            <input id="examCourse" placeholder="Course" />
+            <div class="form-row"><input id="examDate" type="date" required /><input id="examTime" type="time" /></div>
+            <input id="examLocation" placeholder="Location" />
+            <input id="examWeight" type="number" min="0" max="100" placeholder="Weight %" />
+            <textarea id="examTopics" placeholder="Topics to study"></textarea>
+            <button class="btn" type="submit">Add Final Exam</button>
+          </form>
+        </div>
+        <div class="panel">
+          <div class="title-row"><div><h3>Final Exam Countdowns</h3><p>Focused exam schedule.</p></div></div>
+          <div id="examList" class="list"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="quran" class="section">
+      <div class="panel">
+        <div class="title-row"><div><h3>Quran Progress</h3><p>Current page, target, pages/day, and streak.</p></div><button id="addQuranPageBtn" class="btn ghost small">+1 Page</button></div>
+        <div class="progress-shell" style="margin-bottom:14px;"><div id="quranProgress" class="progress-bar"></div></div>
+        <div class="quran-layout">
+          <form id="quranForm">
+            <input id="quranSurah" placeholder="Current Surah" />
+            <div class="form-row"><input id="quranCurrent" type="number" min="1" placeholder="Current page" /><input id="quranTarget" type="number" min="1" placeholder="Target page" /></div>
+            <div class="form-row"><input id="quranPages" type="number" min="1" placeholder="Pages per day" /><input id="quranStreak" type="number" min="0" placeholder="Streak days" /></div>
+            <textarea id="quranNotes" placeholder="Notes"></textarea>
+            <button class="btn" type="submit">Save Quran</button>
+          </form>
+          <div class="quran-summary"><p>Progress</p><strong id="quranPercent">0%</strong><p>Remaining days</p><strong id="quranRemaining">0</strong><p id="quranStreakText">Current streak: 0 days</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="clubs" class="section">
+      <div class="grid-2">
+        <div class="panel">
+          <div class="title-row"><div><h3>Add Club Work</h3><p>Responsibilities outside courses.</p></div></div>
+          <form id="clubForm">
+            <input id="clubName" placeholder="Club name" required />
+            <input id="clubTitle" placeholder="Task title" required />
+            <input id="clubRole" placeholder="Your role" />
+            <input id="clubDate" type="date" required />
+            <textarea id="clubNotes" placeholder="Notes"></textarea>
+            <button class="btn" type="submit">Add Club Task</button>
+          </form>
+        </div>
+        <div class="panel">
+          <div class="title-row"><div><h3>Club Countdowns</h3><p>Upcoming extracurricular work.</p></div></div>
+          <div id="clubList" class="list"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="gym" class="section">
+      <div class="grid-2">
+        <div class="panel">
+          <div class="title-row"><div><h3>Add Gym Day</h3><p>Weekly health plan.</p></div></div>
+          <form id="gymForm">
+            <select id="gymDay"><option>Saturday</option><option>Sunday</option><option>Monday</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option><option>Friday</option></select>
+            <input id="gymFocus" placeholder="Focus, e.g. Push / Pull / Legs" required />
+            <button class="btn" type="submit">Add Gym Day</button>
+          </form>
+        </div>
+        <div class="panel">
+          <div class="title-row"><div><h3>Gym Tracker</h3><p>Simple weekly checklist.</p></div><button id="resetGymBtn" class="btn ghost small">Reset Week</button></div>
+          <div id="gymList" class="list"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast">Saved</div>
+
+  <script>
+    const STORAGE_KEY = "ai_uni_dashboard_clean_v3";
+    const OLD_KEYS = ["ai_uni_dashboard_aesthetic_dark_v2", "ai_uni_dashboard_single_html_v1"];
+    const THEME_KEY = "ai_uni_dashboard_theme";
+
+    function makeId() { return crypto.randomUUID ? crypto.randomUUID() : "id-" + Date.now() + Math.random().toString(16).slice(2); }
+    function todayISO() { return new Date().toISOString().slice(0, 10); }
+    function parseLocalDate(value) { if (!value) return null; const p = value.split("-").map(Number); return new Date(p[0], p[1] - 1, p[2]); }
+    function formatDate(value) { if (!value) return "No date"; return parseLocalDate(value).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" }); }
+    function escapeHTML(v) { return String(v ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;"); }
+
+    function defaultData() {
+      return {
+        tasks: [
+          { id: makeId(), title: "Finish project report", category: "Project", course: "AIS302", date: todayISO(), priority: "High", weight: 10, status: "studying", notes: "Write summary, screenshots, and conclusion." },
+          { id: makeId(), title: "Study for optimization quiz", category: "Quiz", course: "Optimization", date: todayISO(), priority: "Critical", weight: 8, status: "pending", notes: "Revise gradient descent and Quasi-Newton." }
+        ],
+        todos: [
+          { id: makeId(), title: "Clean notebook markdowns", area: "Study", date: todayISO(), done: false },
+          { id: makeId(), title: "Upload files to GitHub", area: "Projects", date: todayISO(), done: false }
+        ],
+        courses: [
+          { id: makeId(), code: "AIS302", name: "Artificial Neural Networks", attendance: { attended: 10, missed: 1 }, assessments: [ { id: makeId(), title: "Labs", weight: 20, score: 18, max: 20 }, { id: makeId(), title: "Midterm", weight: 20, score: 17, max: 20 }, { id: makeId(), title: "Final Exam", weight: 40, score: "", max: 40 } ] },
+          { id: makeId(), code: "CSCI322", name: "Data Analysis", attendance: { attended: 12, missed: 0 }, assessments: [ { id: makeId(), title: "Assignments", weight: 15, score: 13, max: 15 }, { id: makeId(), title: "Project", weight: 25, score: "", max: 25 }, { id: makeId(), title: "Final Exam", weight: 40, score: "", max: 40 } ] }
+        ],
+        exams: [ { id: makeId(), title: "Artificial Neural Networks Final", course: "AIS302", date: todayISO(), time: "09:00", location: "Main Campus", weight: 40, topics: "TensorFlow, PyTorch, CNN, RNN, GANs", status: "pending" } ],
+        quran: { currentSurah: "Al-Baqarah", currentPage: 18, targetPage: 604, pagesPerDay: 2, streak: 4, notes: "Read after Fajr or before sleeping." },
+        clubs: [ { id: makeId(), club: "AI Club", title: "Prepare workshop idea", role: "Member", date: todayISO(), notes: "Topic idea: intro to ML projects for beginners.", status: "pending" } ],
+        gym: [ { id: makeId(), day: "Monday", focus: "Push", done: false }, { id: makeId(), day: "Wednesday", focus: "Pull", done: false }, { id: makeId(), day: "Friday", focus: "Legs", done: false } ]
+      };
+    }
+
+    function loadData() {
+      try {
+        let saved = localStorage.getItem(STORAGE_KEY);
+        if (!saved) for (const key of OLD_KEYS) { saved = localStorage.getItem(key); if (saved) break; }
+        return saved ? JSON.parse(saved) : defaultData();
+      } catch { return defaultData(); }
+    }
+
+    let data = loadData();
+
+    function saveData() { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
+    function showToast(msg = "Saved") { const t = document.getElementById("toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(window.toastTimer); window.toastTimer = setTimeout(() => t.classList.remove("show"), 1400); }
+
+    function targetDateTime(item) {
+      if (!item.date) return null;
+      if (item.source === "Final Exam" && item.time) return new Date(`${item.date}T${item.time}`);
+      return new Date(`${item.date}T23:59:59`);
+    }
+
+    function msUntil(item) {
+      const target = targetDateTime(item);
+      if (!target) return 999999999999;
+      return target.getTime() - Date.now();
+    }
+
+    function countdownParts(item) {
+      const ms = msUntil(item);
+      const late = ms < 0;
+      const abs = Math.abs(ms);
+      const days = Math.floor(abs / 86400000);
+      const hours = Math.floor((abs % 86400000) / 3600000);
+      const mins = Math.floor((abs % 3600000) / 60000);
+      return { late, days, hours, mins };
+    }
+
+    function countdownLabel(item) {
+      const c = countdownParts(item);
+      if (c.late) return `${c.days}d ${c.hours}h late`;
+      if (c.days === 0 && c.hours === 0) return `${c.mins}m left`;
+      if (c.days === 0) return `${c.hours}h ${c.mins}m left`;
+      return `${c.days}d ${c.hours}h left`;
+    }
+
+    function statusClass(item) {
+      const c = countdownParts(item);
+      if (c.late) return "late";
+      if (c.days === 0) return "today";
+      return "future";
+    }
+
+    function getUpcomingItems() {
+      const tasks = data.tasks.filter(x => x.status !== "done").map(x => ({ ...x, source: "Task", displayType: x.category }));
+      const exams = data.exams.filter(x => x.status !== "done").map(x => ({ ...x, source: "Final Exam", displayType: "Final Exam", priority: "Critical" }));
+      const clubs = data.clubs.filter(x => x.status !== "done").map(x => ({ ...x, source: "Club", displayType: "Club", course: x.club, priority: "Medium" }));
+      return [...tasks, ...exams, ...clubs].sort((a, b) => msUntil(a) - msUntil(b));
+    }
+
+    function courseGrade(course) {
+      let earned = 0, completedWeight = 0, totalWeight = 0;
+      course.assessments.forEach(a => {
+        const weight = Number(a.weight) || 0, score = Number(a.score), max = Number(a.max);
+        totalWeight += weight;
+        if (a.score !== "" && !Number.isNaN(score) && max > 0) { earned += (score / max) * weight; completedWeight += weight; }
+      });
+      return { earned: earned.toFixed(1), completedWeight, totalWeight };
+    }
+
+    function attendancePercent(course) {
+      const attended = Number(course.attendance.attended) || 0, missed = Number(course.attendance.missed) || 0;
+      return attended + missed ? Math.round((attended / (attended + missed)) * 100) : 100;
+    }
+
+    function quranPercent() {
+      const q = data.quran;
+      return Math.max(0, Math.min(100, Math.round(((Number(q.currentPage) || 0) / (Number(q.targetPage) || 604)) * 100)));
+    }
+
+    function renderDashboard() {
+      const upcoming = getUpcomingItems();
+      const week = upcoming.filter(x => { const c = countdownParts(x); return !c.late && c.days <= 7; }).length;
+      const overdue = upcoming.filter(x => countdownParts(x).late).length;
+      const finals = data.exams.filter(x => x.status !== "done").length;
+      document.getElementById("statWeek").textContent = week;
+      document.getElementById("statOverdue").textContent = overdue;
+      document.getElementById("statFinals").textContent = finals;
+      document.getElementById("quickUpcoming").textContent = `${upcoming.length} upcoming`;
+      document.getElementById("quickWeek").textContent = `${week} this week`;
+
+      const next = upcoming[0];
+      if (next) {
+        const c = countdownParts(next);
+        document.getElementById("nextTitle").textContent = next.title;
+        document.getElementById("nextMeta").textContent = `${next.source} • ${next.course || next.displayType || "No course"} • ${formatDate(next.date)}${next.time ? " • " + next.time : ""}`;
+        document.getElementById("countDays").textContent = c.late ? `-${c.days}` : c.days;
+        document.getElementById("countHours").textContent = c.hours;
+        document.getElementById("countMins").textContent = c.mins;
+      } else {
+        document.getElementById("nextTitle").textContent = "No upcoming items";
+        document.getElementById("nextMeta").textContent = "Add a task, final exam, or club deadline.";
+        document.getElementById("countDays").textContent = "--";
+        document.getElementById("countHours").textContent = "--";
+        document.getElementById("countMins").textContent = "--";
+      }
+
+      document.getElementById("upcomingList").innerHTML = upcoming.length ? upcoming.slice(0, 8).map(item => `
+        <div class="upcoming">
+          <div>
+            <h4>${escapeHTML(item.title)}</h4>
+            <p>${escapeHTML(item.source)} • ${escapeHTML(item.course || item.displayType || "No course")} • ${formatDate(item.date)}${item.time ? " • " + escapeHTML(item.time) : ""}</p>
+            <div class="meta"><span class="pill ${String(item.priority || "medium").toLowerCase()}">${escapeHTML(item.priority || "Medium")}</span><span class="pill ${statusClass(item)}">${countdownLabel(item)}</span></div>
+          </div>
+          <div class="mini-count"><strong>${countdownParts(item).days}d</strong><span>${countdownParts(item).late ? "late" : "left"}</span></div>
+        </div>
+      `).join("") : `<div class="empty">No upcoming items. Add tasks, final exams, or club work.</div>`;
+    }
+
+    function renderTodos() {
+      document.getElementById("todoList").innerHTML = data.todos.length ? data.todos.slice(0, 8).map(todo => `
+        <div class="todo"><label class="check"><input type="checkbox" ${todo.done ? "checked" : ""} onchange="toggleTodo('${todo.id}', this.checked)"><div><h4 class="${todo.done ? "done-text" : ""}">${escapeHTML(todo.title)}</h4><p>${escapeHTML(todo.area)} • ${formatDate(todo.date)}</p></div></label><button class="btn danger small" onclick="deleteTodo('${todo.id}')">Delete</button></div>
+      `).join("") : `<div class="empty">No to-dos yet.</div>`;
+    }
+
+    function renderTasks() {
+      const search = (document.getElementById("taskSearch")?.value || "").toLowerCase();
+      const filter = document.getElementById("taskFilter")?.value || "all";
+      const sort = document.getElementById("taskSort")?.value || "date";
+      const rank = { Critical: 0, High: 1, Medium: 2, Low: 3 };
+      let tasks = data.tasks.filter(t => (filter === "all" || t.status === filter) && (`${t.title} ${t.course} ${t.category} ${t.notes}`.toLowerCase().includes(search)));
+      tasks.sort((a,b) => sort === "priority" ? (rank[a.priority] ?? 9) - (rank[b.priority] ?? 9) : msUntil({ ...a, source: "Task" }) - msUntil({ ...b, source: "Task" }));
+      document.getElementById("taskList").innerHTML = tasks.length ? tasks.map(task => {
+        const item = { ...task, source: "Task" };
+        return `<div class="item"><div class="item-head"><div><h4>${escapeHTML(task.title)}</h4><p>${escapeHTML(task.category)} • ${escapeHTML(task.course || "No course")} • ${formatDate(task.date)} • ${escapeHTML(task.weight || 0)}% weight</p>${task.notes ? `<p>${escapeHTML(task.notes)}</p>` : ""}</div><button class="btn danger small" onclick="deleteTask('${task.id}')">Delete</button></div><div class="meta"><span class="pill ${String(task.priority).toLowerCase()}">${escapeHTML(task.priority)}</span><span class="pill ${task.status}">${escapeHTML(task.status)}</span><span class="pill ${statusClass(item)}">${countdownLabel(item)}</span><select onchange="updateTaskStatus('${task.id}', this.value)"><option value="pending" ${task.status === "pending" ? "selected" : ""}>Pending</option><option value="studying" ${task.status === "studying" ? "selected" : ""}>Studying</option><option value="done" ${task.status === "done" ? "selected" : ""}>Done</option></select></div></div>`;
+      }).join("") : `<div class="empty">No matching tasks.</div>`;
+    }
+
+    function renderCourses() {
+      const list = document.getElementById("courseList");
+      list.innerHTML = data.courses.length ? data.courses.map(course => {
+        const grade = courseGrade(course), att = attendancePercent(course);
+        const assessments = course.assessments.map(a => `<div class="assessment-grid"><input value="${escapeHTML(a.title)}" onchange="updateAssessment('${course.id}','${a.id}','title',this.value)"><input type="number" value="${escapeHTML(a.weight)}" onchange="updateAssessment('${course.id}','${a.id}','weight',this.value)" placeholder="Weight"><input type="number" value="${escapeHTML(a.score)}" onchange="updateAssessment('${course.id}','${a.id}','score',this.value)" placeholder="Score"><input type="number" value="${escapeHTML(a.max)}" onchange="updateAssessment('${course.id}','${a.id}','max',this.value)" placeholder="Max"><button class="btn danger small" onclick="deleteAssessment('${course.id}','${a.id}')">X</button></div>`).join("");
+        return `<div class="panel course-card"><div class="item-head"><div><h4>${escapeHTML(course.code)}</h4><p>${escapeHTML(course.name)}</p></div><button class="btn danger small" onclick="deleteCourse('${course.id}')">Delete</button></div><div class="progress-shell" style="margin-top:12px;"><div class="progress-bar" style="width:${Math.min(100, Number(grade.earned))}%"></div></div><div class="mini-stats"><div class="mini-stat"><strong>${grade.earned}%</strong><span>earned</span></div><div class="mini-stat"><strong>${grade.completedWeight}%</strong><span>done weight</span></div><div class="mini-stat"><strong>${att}%</strong><span>attendance</span></div></div><div class="form-row" style="margin-bottom:12px;"><input type="number" value="${escapeHTML(course.attendance.attended)}" onchange="updateAttendance('${course.id}','attended',this.value)" placeholder="Attended"><input type="number" value="${escapeHTML(course.attendance.missed)}" onchange="updateAttendance('${course.id}','missed',this.value)" placeholder="Missed"></div><div class="assessment-grid labels"><span>Name</span><span>Weight</span><span>Score</span><span>Max</span><span></span></div>${assessments || `<div class="empty">No assessments yet.</div>`}<button class="btn ghost full" style="margin-top:8px;" onclick="addAssessment('${course.id}')">Add Assessment</button></div>`;
+      }).join("") : `<div class="empty">No courses yet.</div>`;
+    }
+
+    function renderExams() {
+      document.getElementById("examList").innerHTML = data.exams.length ? data.exams.slice().sort((a,b)=>msUntil({...a,source:"Final Exam"})-msUntil({...b,source:"Final Exam"})).map(exam => {
+        const item = { ...exam, source: "Final Exam" };
+        return `<div class="item"><div class="item-head"><div><h4>${escapeHTML(exam.title)}</h4><p>${escapeHTML(exam.course || "No course")} • ${formatDate(exam.date)} • ${escapeHTML(exam.time || "No time")} • ${escapeHTML(exam.location || "No location")}</p>${exam.topics ? `<p>${escapeHTML(exam.topics)}</p>` : ""}</div><div class="mini-count"><strong>${countdownParts(item).days}d</strong><span>${countdownParts(item).late ? "late" : "left"}</span></div></div><div class="meta"><span class="pill critical">${countdownLabel(item)}</span><span class="pill">${escapeHTML(exam.weight || 0)}% weight</span><span class="pill ${exam.status}">${exam.status}</span><select onchange="updateExamStatus('${exam.id}',this.value)"><option value="pending" ${exam.status === "pending" ? "selected" : ""}>Pending</option><option value="studying" ${exam.status === "studying" ? "selected" : ""}>Studying</option><option value="done" ${exam.status === "done" ? "selected" : ""}>Done</option></select><button class="btn danger small" onclick="deleteExam('${exam.id}')">Delete</button></div></div>`;
+      }).join("") : `<div class="empty">No final exams yet.</div>`;
+    }
+
+    function renderQuran() {
+      const q = data.quran;
+      quranSurah.value = q.currentSurah || ""; quranCurrent.value = q.currentPage || 1; quranTarget.value = q.targetPage || 604; quranPages.value = q.pagesPerDay || 1; quranStreak.value = q.streak || 0; quranNotes.value = q.notes || "";
+      const percent = quranPercent();
+      const remaining = Math.max(0, Math.ceil(((Number(q.targetPage) || 604) - (Number(q.currentPage) || 0)) / (Number(q.pagesPerDay) || 1)));
+      quranProgress.style.width = percent + "%"; quranPercentEl.textContent = percent + "%";
+      quranRemaining.textContent = remaining; quranStreakText.textContent = `Current streak: ${q.streak || 0} days`;
+    }
+
+    function renderClubs() {
+      clubList.innerHTML = data.clubs.length ? data.clubs.map(c => {
+        const item = { ...c, source: "Club" };
+        return `<div class="item"><div class="item-head"><div><h4>${escapeHTML(c.title)}</h4><p>${escapeHTML(c.club)} • ${escapeHTML(c.role || "No role")} • ${formatDate(c.date)}</p>${c.notes ? `<p>${escapeHTML(c.notes)}</p>` : ""}</div><div class="mini-count"><strong>${countdownParts(item).days}d</strong><span>${countdownParts(item).late ? "late" : "left"}</span></div></div><div class="meta"><span class="pill ${c.status}">${escapeHTML(c.status)}</span><span class="pill ${statusClass(item)}">${countdownLabel(item)}</span><select onchange="updateClubStatus('${c.id}',this.value)"><option value="pending" ${c.status === "pending" ? "selected" : ""}>Pending</option><option value="studying" ${c.status === "studying" ? "selected" : ""}>Working</option><option value="done" ${c.status === "done" ? "selected" : ""}>Done</option></select><button class="btn danger small" onclick="deleteClub('${c.id}')">Delete</button></div></div>`;
+      }).join("") : `<div class="empty">No club tasks yet.</div>`;
+    }
+
+    function renderGym() {
+      gymList.innerHTML = data.gym.length ? data.gym.map(g => `<div class="gymrow"><label class="check"><input type="checkbox" ${g.done ? "checked" : ""} onchange="toggleGym('${g.id}',this.checked)"><div><h4 class="${g.done ? "done-text" : ""}">${escapeHTML(g.day)}</h4><p>${escapeHTML(g.focus)}</p></div></label><button class="btn danger small" onclick="deleteGym('${g.id}')">Delete</button></div>`).join("") : `<div class="empty">No gym days yet.</div>`;
+    }
+
+    function setTodayDefaults() {
+      ["todoDate","taskDate","examDate","clubDate"].forEach(id => { const el = document.getElementById(id); if (el && !el.value) el.value = todayISO(); });
+      if (examTime && !examTime.value) examTime.value = "09:00";
+    }
+
+    function renderAll(toast = false) { saveData(); renderDashboard(); renderTodos(); renderTasks(); renderCourses(); renderExams(); renderQuran(); renderClubs(); renderGym(); setTodayDefaults(); if (toast) showToast(); }
+
+    function switchTab(tab) {
+      document.querySelectorAll(".tab").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
+      document.querySelectorAll(".section").forEach(s => s.classList.toggle("active", s.id === tab));
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+    window.switchTab = switchTab;
+    document.querySelectorAll(".tab").forEach(b => b.addEventListener("click", () => switchTab(b.dataset.tab)));
+
+    const quranPercentEl = document.getElementById("quranPercent");
+    todoForm.addEventListener("submit", e => { e.preventDefault(); data.todos.unshift({ id: makeId(), title: todoTitle.value.trim(), area: todoArea.value, date: todoDate.value || todayISO(), done: false }); e.target.reset(); renderAll(true); });
+    taskForm.addEventListener("submit", e => { e.preventDefault(); data.tasks.unshift({ id: makeId(), title: taskTitle.value.trim(), category: taskCategory.value, course: taskCourse.value.trim(), date: taskDate.value || todayISO(), priority: taskPriority.value, weight: Number(taskWeight.value) || 0, status: taskStatus.value, notes: taskNotes.value.trim() }); e.target.reset(); renderAll(true); });
+    courseForm.addEventListener("submit", e => { e.preventDefault(); data.courses.push({ id: makeId(), code: courseCode.value.trim(), name: courseName.value.trim(), attendance: { attended: 0, missed: 0 }, assessments: [] }); e.target.reset(); renderAll(true); });
+    examForm.addEventListener("submit", e => { e.preventDefault(); data.exams.unshift({ id: makeId(), title: examTitle.value.trim(), course: examCourse.value.trim(), date: examDate.value || todayISO(), time: examTime.value || "09:00", location: examLocation.value.trim(), weight: Number(examWeight.value) || 0, topics: examTopics.value.trim(), status: "pending" }); e.target.reset(); renderAll(true); });
+    clubForm.addEventListener("submit", e => { e.preventDefault(); data.clubs.unshift({ id: makeId(), club: clubName.value.trim(), title: clubTitle.value.trim(), role: clubRole.value.trim(), date: clubDate.value || todayISO(), notes: clubNotes.value.trim(), status: "pending" }); e.target.reset(); renderAll(true); });
+    gymForm.addEventListener("submit", e => { e.preventDefault(); data.gym.push({ id: makeId(), day: gymDay.value, focus: gymFocus.value.trim(), done: false }); e.target.reset(); renderAll(true); });
+    quranForm.addEventListener("submit", e => { e.preventDefault(); data.quran = { currentSurah: quranSurah.value.trim(), currentPage: Number(quranCurrent.value) || 1, targetPage: Number(quranTarget.value) || 604, pagesPerDay: Number(quranPages.value) || 1, streak: Number(quranStreak.value) || 0, notes: quranNotes.value.trim() }; renderAll(true); });
+
+    taskSearch.addEventListener("input", renderTasks); taskFilter.addEventListener("change", renderTasks); taskSort.addEventListener("change", renderTasks);
+    window.toggleTodo = (id, checked) => { data.todos = data.todos.map(x => x.id === id ? { ...x, done: checked } : x); renderAll(true); };
+    window.deleteTodo = id => { data.todos = data.todos.filter(x => x.id !== id); renderAll(true); };
+    window.updateTaskStatus = (id, status) => { data.tasks = data.tasks.map(x => x.id === id ? { ...x, status } : x); renderAll(true); };
+    window.deleteTask = id => { data.tasks = data.tasks.filter(x => x.id !== id); renderAll(true); };
+    window.deleteCourse = id => { data.courses = data.courses.filter(x => x.id !== id); renderAll(true); };
+    window.updateAttendance = (id, field, value) => { data.courses = data.courses.map(c => c.id === id ? { ...c, attendance: { ...c.attendance, [field]: Number(value) || 0 } } : c); renderAll(true); };
+    window.addAssessment = id => { const title = prompt("Assessment name, example: Quiz 2"); if (!title) return; const weight = Number(prompt("Weight %, example: 10") || 0); const max = Number(prompt("Max score, example: 10") || weight || 100); data.courses = data.courses.map(c => c.id === id ? { ...c, assessments: [...c.assessments, { id: makeId(), title, weight, score: "", max }] } : c); renderAll(true); };
+    window.updateAssessment = (cid, aid, field, value) => { data.courses = data.courses.map(c => c.id === cid ? { ...c, assessments: c.assessments.map(a => a.id === aid ? { ...a, [field]: ["weight","max"].includes(field) ? Number(value) || 0 : value } : a) } : c); renderAll(true); };
+    window.deleteAssessment = (cid, aid) => { data.courses = data.courses.map(c => c.id === cid ? { ...c, assessments: c.assessments.filter(a => a.id !== aid) } : c); renderAll(true); };
+    window.updateExamStatus = (id, status) => { data.exams = data.exams.map(x => x.id === id ? { ...x, status } : x); renderAll(true); };
+    window.deleteExam = id => { data.exams = data.exams.filter(x => x.id !== id); renderAll(true); };
+    window.updateClubStatus = (id, status) => { data.clubs = data.clubs.map(x => x.id === id ? { ...x, status } : x); renderAll(true); };
+    window.deleteClub = id => { data.clubs = data.clubs.filter(x => x.id !== id); renderAll(true); };
+    window.toggleGym = (id, checked) => { data.gym = data.gym.map(x => x.id === id ? { ...x, done: checked } : x); renderAll(true); };
+    window.deleteGym = id => { data.gym = data.gym.filter(x => x.id !== id); renderAll(true); };
+
+    addQuranPageBtn.addEventListener("click", () => { data.quran.currentPage = (Number(data.quran.currentPage) || 0) + 1; renderAll(true); });
+    resetGymBtn.addEventListener("click", () => { data.gym = data.gym.map(x => ({ ...x, done: false })); renderAll(true); });
+
+    function applyTheme(theme) { document.documentElement.dataset.theme = theme; localStorage.setItem(THEME_KEY, theme); themeBtn.textContent = theme === "dark" ? "🌙 Dark" : "☀️ Light"; }
+    themeBtn.addEventListener("click", () => applyTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark"));
+    exportBtn.addEventListener("click", () => { const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = "ai-uni-dashboard-backup.json"; a.click(); URL.revokeObjectURL(url); showToast("Backup exported"); });
+    importBtn.addEventListener("click", () => importFile.click());
+    importFile.addEventListener("change", e => { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = () => { try { data = JSON.parse(reader.result); renderAll(true); showToast("Backup imported"); } catch { alert("Invalid JSON file."); } }; reader.readAsText(file); });
+    resetBtn.addEventListener("click", () => { if (!confirm("Reset everything to sample data?")) return; data = defaultData(); renderAll(true); });
+
+    function updateClock() {
+      const now = new Date();
+      dateText.textContent = now.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
+      quickClock.textContent = now.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+      renderDashboard(); renderTasks(); renderExams(); renderClubs();
+    }
+
+    applyTheme(localStorage.getItem(THEME_KEY) || "dark");
+    setTodayDefaults(); renderAll(false); updateClock(); setInterval(updateClock, 60000);
+  </script>
+</body>
+</html>
